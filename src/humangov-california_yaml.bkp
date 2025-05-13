@@ -1,41 +1,41 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: humangov-python-app-florida
+  name: humangov-python-app-california
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: humangov-python-app-florida
+      app: humangov-python-app-california
   template:
     metadata:
       labels:
-        app: humangov-python-app-florida
+        app: humangov-python-app-california
     spec:
       serviceAccountName: humangov-pod-execution-role
       containers:
-      - name: humangov-python-app-florida
-        image: CONTAINER_IMAGE
+      - name: humangov-python-app-california
+        image: public.ecr.aws/k9b9f1u8/humangov-app:latest
         env:
         - name: AWS_BUCKET
-          value: "humangov-florida-s3-okaf"
+          value: "humangov-california-s3-j5sk"
         - name: AWS_DYNAMODB_TABLE
-          value: "humangov-florida-dynamodb"
+          value: "humangov-california-dynamodb"
         - name: AWS_REGION
           value: "us-east-1"
         - name: US_STATE
-          value: "florida"
+          value: "california"
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: humangov-python-app-service-florida
+  name: humangov-python-app-service-california
 spec:
   type: ClusterIP
   selector:
-    app: humangov-python-app-florida
+    app: humangov-python-app-california
   ports:
     - protocol: TCP
       port: 8000
@@ -46,39 +46,39 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: humangov-nginx-reverse-proxy-florida
+  name: humangov-nginx-reverse-proxy-california
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: humangov-nginx-reverse-proxy-florida
+      app: humangov-nginx-reverse-proxy-california
   template:
     metadata:
       labels:
-        app: humangov-nginx-reverse-proxy-florida
+        app: humangov-nginx-reverse-proxy-california
     spec:
       containers:
-      - name: humangov-nginx-reverse-proxy-florida
+      - name: humangov-nginx-reverse-proxy-california
         image: nginx:alpine
         ports:
         - containerPort: 80
         volumeMounts:
-        - name: humangov-nginx-config-florida-vol
+        - name: humangov-nginx-config-california-vol
           mountPath: /etc/nginx/
       volumes:
-      - name: humangov-nginx-config-florida-vol
+      - name: humangov-nginx-config-california-vol
         configMap:
-          name: humangov-nginx-config-florida
+          name: humangov-nginx-config-california
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: humangov-nginx-service-florida
+  name: humangov-nginx-service-california
 spec:
   selector:
-    app: humangov-nginx-reverse-proxy-florida
+    app: humangov-nginx-reverse-proxy-california
   ports:
     - protocol: TCP
       port: 80
@@ -89,7 +89,7 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: humangov-nginx-config-florida
+  name: humangov-nginx-config-california
 data:
   nginx.conf: |
 
@@ -106,7 +106,7 @@ data:
           proxy_set_header Host $host;
           proxy_set_header X-Real-IP $remote_addr;
           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_pass http://humangov-python-app-service-florida:8000; # App container
+          proxy_pass http://humangov-python-app-service-california:8000; # App container
         }
       }
     }
